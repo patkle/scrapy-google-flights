@@ -1,10 +1,11 @@
 import pkgutil
 import json
 import asyncio
-from typing import Optional, Dict
-from parsel.selector import Selector, SelectorList
+from typing import Optional, Dict, Union
+from datetime import date, timedelta
 
 from scrapy import Spider
+from parsel.selector import Selector, SelectorList
 from web_poet.pages import ItemWebPage
 
 from ..http import PyppeteerRequest
@@ -58,18 +59,22 @@ consent_cookie = {
 
 async def load_all_flights(page) -> None:
     """Callback passed to PyppeteerMiddleware to load all flights before returning a respone"""
-    # Selects and clicks button to show all flights 
-    await page.evaluate('''()=> {
+    # JavaScript function to select and click button to show all flights 
+    js_function = '''()=> {
         function getElementByXpath(path) {
             return document.evaluate(
                 path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null
             ).singleNodeValue;
         }
         getElementByXpath('//div[@jsaction="click:yQf8Td"]').click();
-    }
-    ''')
-    # wait for 10 seconds to ensure that all flights are loaded
-    await asyncio.sleep(10)
+    }'''
+    try:
+        await page.evaluate(js_function)
+        # wait for 10 seconds to ensure that all flights are loaded
+        await asyncio.sleep(10)
+    except:
+        # fails if no button found
+        pass
 
 
 class GoogleFlightsSpider(Spider):
@@ -97,10 +102,17 @@ class GoogleFlightsSpider(Spider):
                 dont_filter=True,
             )
 
-    def _get_flight_url(self, flight_data: Dict) -> str:
+    def _get_flight_url(self, flight_data: Dict[str, Union[str, int, None]]) -> str:
+        """Create url for oneway flights from Dictionary"""
         origin = flight_data['origin']
         destination = flight_data['destination']
-        return f'https://www.google.com/flights#flt={origin}.{destination}.2021-02-10' + ";tt:o"
+        departure_date = self._get_date_for_url(flight_data['days_to_depart'])
+        return f'https://www.google.com/flights#flt={origin}.{destination}.{departure_date}' + ";tt:o"
+
+    def _get_date_for_url(self, days_until: int) -> str:
+        """Create date as string in format YYYY-MM-DD"""
+        d = date.today() + timedelta(days=days_until)
+        return f'{d.year}-{d.month:02d}-{d.day:02d}'
 
     async def parse(self, response, page: FlightPage):
         return page.to_item()
