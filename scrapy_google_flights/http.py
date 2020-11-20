@@ -7,4 +7,17 @@ class PyppeteerRequest(Request):
         super().__init__(*args, **kwargs)
 
 class PyppeteerResponse(HtmlResponse):
-    pass
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    # TODO set headers
+    @classmethod
+    async def from_page(cls, page, goto_response, request):
+        return cls(
+            page.url,
+            status=goto_response.status,
+            #headers=response.headers,
+            body=await page.content(),
+            encoding='utf-8',
+            request=request
+        )

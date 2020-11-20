@@ -1,6 +1,6 @@
 import pkgutil
 import json
-from time import sleep
+import asyncio
 
 from scrapy import Spider
 from web_poet.pages import ItemWebPage
@@ -8,18 +8,6 @@ from web_poet.pages import ItemWebPage
 from ..http import PyppeteerRequest
 from ..middlewares import PyppeteerMiddleware
 
-# set this cookie to avoid dealing with cookie warning messages
-consent_cookie = {
-    'url': 'https://www.google.com',
-    'name': 'CONSENT',
-    'value': "YES+US.en+20200218-08-0",
-    'SameSite':"None",
-    "domain": "",
-    'path': '/',
-    'httpOnly': False,
-    'HostOnly': False,
-    'Secure': False
-}
 
 class FlightPage(ItemWebPage):
     @property
@@ -54,16 +42,28 @@ class FlightPage(ItemWebPage):
                 'arrival': self.arrival(flight)
             }
 
+# set consent cookie for google.com to avoid dealing with cookie pop-ups
+consent_cookie = {
+    'url': 'https://www.google.com',
+    'name': 'CONSENT',
+    'value': "YES+US.en+20200218-08-0",
+    'SameSite':"None",
+    "domain": "",
+    'path': '/',
+}
+
 async def load_all_flights(page):
+    """Callback passed to PyppeteerMiddleware to load all flights before returning a respone"""
     await page.evaluate('''()=> {
         function getElementByXpath(path) {
             return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
         }
-
         getElementByXpath('//div[@jsaction="click:yQf8Td"]').click();
     }
     ''')
-    sleep(10)
+    # wait for 10 seconds to ensure that all flights are loaded
+    await asyncio.sleep(10)
+
 
 class GoogleFlightsSpider(Spider):
     name = 'google_flights'
@@ -92,5 +92,5 @@ class GoogleFlightsSpider(Spider):
         destination = flight_data['destination']
         return f'https://www.google.com/flights#flt={origin}.{destination}.2021-02-10' + ";tt:o"
 
-    def parse(self, response, page: FlightPage):
+    async def parse(self, response, page: FlightPage):
         return page.to_item()
