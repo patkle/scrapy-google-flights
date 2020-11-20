@@ -13,10 +13,10 @@ from ..middlewares import PyppeteerMiddleware
 
 
 class FlightPage(ItemWebPage):
-    """Extract flights from Google Flight search result page"""
+    """Extraction logic for flights from Google Flight search result pages"""
     @property
     def flights(self) -> SelectorList:
-        """Returns SelectorList for every flight on given webpage"""
+        """Returns SelectorList for flights on given result page"""
         return self.xpath('//div[@jsaction="click:O1htCb;"]')
 
     def price(self, flight: Selector) -> Optional[str]:
@@ -78,7 +78,6 @@ async def load_all_flights(page) -> None:
 
 
 class GoogleFlightsSpider(Spider):
-    """ """
     name = 'google_flights'
     custom_settings = {
         'DOWNLOADER_MIDDLEWARES': {
@@ -88,7 +87,6 @@ class GoogleFlightsSpider(Spider):
     }
 
     def __init__(self) -> None:
-        """ """
         f = pkgutil.get_data("scrapy_google_flights", "resources/searches.json")
         self.searches = json.loads(f)
 
@@ -110,7 +108,8 @@ class GoogleFlightsSpider(Spider):
         return f'https://www.google.com/flights#flt={origin}.{destination}.{departure_date}' + ";tt:o"
 
     def _get_date_for_url(self, days_until: int) -> str:
-        """Create date as string in format YYYY-MM-DD"""
+        """Create date as string in format YYYY-MM-DD.
+        Adds number of days passed as parameter to today's date."""
         d = date.today() + timedelta(days=days_until)
         return f'{d.year}-{d.month:02d}-{d.day:02d}'
 
