@@ -1,6 +1,8 @@
 import pkgutil
 import json
 import asyncio
+from typing import Optional, Dict
+from parsel.selector import Selector, SelectorList
 
 from scrapy import Spider
 from web_poet.pages import ItemWebPage
@@ -10,30 +12,32 @@ from ..middlewares import PyppeteerMiddleware
 
 
 class FlightPage(ItemWebPage):
+    """Extract flights from Google Flight search result page"""
     @property
-    def flights(self):
+    def flights(self) -> SelectorList:
+        """Returns SelectorList for every flight on given webpage"""
         return self.xpath('//div[@jsaction="click:O1htCb;"]')
 
-    def price(self, flight):
+    def price(self, flight: Selector) -> Optional[str]:
         return flight.xpath('.//div[@class="YMlIz tu4g7b"]/span/text()').get()
 
-    def operator(self, flight):
+    def operator(self, flight: Selector) -> Optional[str]:
         return flight.xpath('.//div[@class="TQqf0e sSHqwe tPgKwe ogfYpf"]/span/text()').get()
 
-    def departure(self, flight):
+    def departure(self, flight: Selector) -> Optional[str]:
         return flight.xpath('.//g-bubble[1]').xpath('.//span[@class="eoY5cb"]/text()').get()
-        
-    def arrival(self, flight):
+
+    def arrival(self, flight: Selector) -> Optional[str]:
         return flight.xpath('.//g-bubble[2]').xpath('.//span[@class="eoY5cb"]/text()').get()
 
-    def duration(self, flight):
+    def duration(self, flight: Selector) -> Optional[str]:
         return flight.xpath('.//div[@class="gvkrdb AdWm1c tPgKwe ogfYpf"]/text()').get()
 
-    def stops(self, flight):
+    def stops(self, flight: Selector) -> Optional[str]:
         # TODO:
-        pass 
+        pass
 
-    def to_item(self):
+    def to_item(self) -> Dict[str, Optional[str]]:
         for flight in self.flights:
             yield {
                 'price': self.price(flight),
@@ -47,16 +51,19 @@ consent_cookie = {
     'url': 'https://www.google.com',
     'name': 'CONSENT',
     'value': "YES+US.en+20200218-08-0",
-    'SameSite':"None",
+    'SameSite': "None",
     "domain": "",
     'path': '/',
 }
 
-async def load_all_flights(page):
+async def load_all_flights(page) -> None:
     """Callback passed to PyppeteerMiddleware to load all flights before returning a respone"""
+    # Selects and clicks button to show all flights 
     await page.evaluate('''()=> {
         function getElementByXpath(path) {
-            return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+            return document.evaluate(
+                path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null
+            ).singleNodeValue;
         }
         getElementByXpath('//div[@jsaction="click:yQf8Td"]').click();
     }
@@ -66,6 +73,7 @@ async def load_all_flights(page):
 
 
 class GoogleFlightsSpider(Spider):
+    """ """
     name = 'google_flights'
     custom_settings = {
         'DOWNLOADER_MIDDLEWARES': {
@@ -74,11 +82,13 @@ class GoogleFlightsSpider(Spider):
         }
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """ """
         f = pkgutil.get_data("scrapy_google_flights", "resources/searches.json")
         self.searches = json.loads(f)
 
-    def start_requests(self):
+    def start_requests(self) -> PyppeteerRequest:
+        """Generate PyppeteerRequests for every search in self.searches"""
         for search in self.searches:
             yield PyppeteerRequest(
                 self._get_flight_url(search),
@@ -86,8 +96,8 @@ class GoogleFlightsSpider(Spider):
                 cookies=consent_cookie,
                 dont_filter=True,
             )
-    
-    def _get_flight_url(self, flight_data):
+
+    def _get_flight_url(self, flight_data: Dict) -> str:
         origin = flight_data['origin']
         destination = flight_data['destination']
         return f'https://www.google.com/flights#flt={origin}.{destination}.2021-02-10' + ";tt:o"
