@@ -34,9 +34,14 @@ class FlightPage(ItemWebPage):
     def duration(self, flight: Selector) -> Optional[str]:
         return flight.xpath('.//div[@class="gvkrdb AdWm1c tPgKwe ogfYpf"]/text()').get()
 
+    def origin(self, flight: Selector) -> Optional[str]:
+        return flight.xpath('(.//span[@jsname="d6wfac"])[3]/text()').get()
+
+    def destination(self, flight: Selector) -> Optional[str]:
+        return flight.xpath('(.//span[@jsname="d6wfac"])[4]/text()').get()
+
     def stops(self, flight: Selector) -> Optional[str]:
-        # TODO:
-        pass
+        return flight.xpath('.//span[@class="pIgMWd ogfYpf"]/@aria-label').get()
 
     def to_item(self):
         for flight in self.flights:
@@ -44,7 +49,11 @@ class FlightPage(ItemWebPage):
                 'price': self.price(flight),
                 'operator': self.operator(flight),
                 'departure': self.departure(flight),
-                'arrival': self.arrival(flight)
+                'arrival': self.arrival(flight),
+                'duration': self.duration(flight),
+                'origin': self.origin(flight),
+                'destination': self.destination(flight),
+                'stops': self.stops(flight)
             }
 
 # set consent cookie for google.com to avoid dealing with cookie pop-ups
