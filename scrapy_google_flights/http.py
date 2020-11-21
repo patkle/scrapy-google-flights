@@ -1,6 +1,5 @@
 from __future__ import annotations
-from scrapy import Request
-from scrapy.http import HtmlResponse
+from scrapy.http import HtmlResponse, Request
 import pyppeteer
 
 
