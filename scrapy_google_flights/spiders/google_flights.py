@@ -38,7 +38,7 @@ class FlightPage(ItemWebPage):
         # TODO:
         pass
 
-    def to_item(self) -> Dict[str, Optional[str]]:
+    def to_item(self):
         for flight in self.flights:
             yield {
                 'price': self.price(flight),
