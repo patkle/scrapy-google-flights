@@ -6,7 +6,7 @@ Currently only oneway flights are supported.
 To run this spider, you will need to install [pyppeteer](https://pypi.org/project/pyppeteer/), [scrapy-poet](https://pypi.org/project/scrapy-poet/) and [spidermon](https://pypi.org/project/spidermon/).
 
 ## starting the spider
-After cloning and installing the necessary requirements, you should be able to start the spider with the command `scrapy crawl google_flights`. 
+After cloning this repository and installing the necessary requirements, you should be able to start the spider with the command `scrapy crawl google_flights`. 
 You can see more options for running the spider with `scrapy crawl --help`.
 
 ## enable Spidermon notifications via Telegram
