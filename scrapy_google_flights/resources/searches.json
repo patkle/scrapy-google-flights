@@ -2,17 +2,14 @@
     {
         "origin": "FRA",
         "destination": "BCN",
-        "days_to_depart": 90,
-        "days_to_return": null
+        "days_to_depart": 90
     }, {
         "origin": "LEJ",
         "destination": "BCN",
-        "days_to_depart": 90,
-        "days_to_return": null
+        "days_to_depart": 90
     }, {
         "origin": "BER",
         "destination": "BCN",
-        "days_to_depart": 90,
-        "days_to_return": null
+        "days_to_depart": 90
     }
 ]
