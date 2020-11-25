@@ -1,6 +1,5 @@
 # scrapy-google-flights
-This is a small project demonstrating how one could scrape flight data from Google Flights using scrapy and pyppeteer.
-Currently only oneway flights are supported.
+This is a small project that demonstrates how you could scrape flight data from Google Flights using *Scrapy* and *Pyppeteer*. Currently, only one-way flights are supported.
 
 ## requirements
 To run this spider, you will need to install [pyppeteer](https://pypi.org/project/pyppeteer/), [scrapy-poet](https://pypi.org/project/scrapy-poet/) and [spidermon](https://pypi.org/project/spidermon/).
@@ -20,7 +19,8 @@ The format looks like this:
 }
 ```
 
-`origin` and `destination` are specified as [IATA airport codes](https://en.wikipedia.org/wiki/IATA_airport_code). `days_to_depart` is an integer which defines in how many days from now the flight starts.
+`origin` and `destination` are specified as [IATA airport codes](https://en.wikipedia.org/wiki/IATA_airport_code). You can use the search engine for IATA airport codes provided [here](https://www.iata.org/en/publications/directories/code-search/).
+`days_to_depart` is an integer which defines in how many days from now the flight starts.
 For example, if you wanted to travel from "Berlin Brandenburg Airport" (BER) to "Barcelona–El Prat Airport" (BCN) in 30 days, your json would look like this:
 
 ```json
